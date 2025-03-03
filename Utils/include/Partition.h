@@ -101,7 +101,7 @@ public:
   ///  @note 範囲外の要素番号が指定された場合MPI::PROC_NULLを返す.
   ///
   int getRank(int i) const {
-    if (i < 0 || i >= nItems) return MPI::PROC_NULL;
+    if (i < 0 || i >= nItems) return MPI_PROC_NULL;
     std::vector<int>::const_iterator it = std::upper_bound(end.begin(), end.end(), i);
     assert(it != end.end());
     return it - end.begin();

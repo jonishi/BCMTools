@@ -39,7 +39,7 @@ class Vector3DUpdater : public VCUpdater {
 private:
 
   Vector3DUpdater(const NeighborInfo* neighborInfo,
-                  const MPI::Comm& comm = MPI::COMM_WORLD);
+                  const MPI_Comm& comm = MPI_COMM_WORLD);
 
   ~Vector3DUpdater();
 };

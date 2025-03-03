@@ -94,7 +94,7 @@ public:
   ///
   ///  @note rank0のみが呼ぶこと
   ///
-  void broadcast(MPI::Intracomm& comm = MPI::COMM_WORLD);
+  void broadcast(MPI_Comm comm = MPI_COMM_WORLD);
 
   /// rank0からOctree情報を受信.
   ///
@@ -103,7 +103,7 @@ public:
   ///
   ///  @note rank0からは呼ばないこと
   ///
-  static BCMOctree* ReceiveFromMaster(MPI::Intracomm& comm = MPI::COMM_WORLD);
+  static BCMOctree* ReceiveFromMaster(MPI_Comm comm = MPI_COMM_WORLD);
 
   /// ルートグリッドを取得
   const RootGrid* getRootGrid() const { return rootGrid; }

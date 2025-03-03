@@ -54,7 +54,7 @@ void BlockManager::endRegisterBlock()
   }
 
   int numBlockScanned;
-  comm.Scan(&numBlock, &numBlockScanned, 1, MPI::INT, MPI::SUM);
+  MPI_Scan(&numBlock, &numBlockScanned, 1, MPI_INT, MPI_SUM, comm);
   startID = numBlockScanned - numBlock;
 }
 
@@ -117,8 +117,10 @@ void BlockManager::prepareForVCUpdate(int dataClassID, int tag, VCUpdateMethod::
 /// ブロック配置情報を出力.
 void BlockManager::printBlockLayoutInfo()
 {
-  int myrank = comm.Get_rank();
-  int nprocs = comm.Get_size();
+  int myrank = -1;
+  int nprocs = -1;
+  MPI_Comm_rank(comm, &myrank);
+  MPI_Comm_size(comm, &nprocs);
 
   if (myrank == 0) {
     std::cout << "Block Layout Information" << std::endl;
@@ -136,8 +138,8 @@ void BlockManager::printBlockLayoutInfo()
 
 //std::cout << myrank << ": Lmin=" << levelMin << " Lmax=" << levelMax << std::endl;
 
-  comm.Allreduce(MPI_IN_PLACE, &levelMin, 1, MPI::INT, MPI::MIN);
-  comm.Allreduce(MPI_IN_PLACE, &levelMax, 1, MPI::INT, MPI::MAX);
+  MPI_Allreduce(MPI_IN_PLACE, &levelMin, 1, MPI_INT, MPI_MIN, comm);
+  MPI_Allreduce(MPI_IN_PLACE, &levelMax, 1, MPI_INT, MPI_MAX, comm);
 
   if (myrank == 0) {
     std::cout << "  Min level: " << levelMin << std::endl;
@@ -158,11 +160,11 @@ void BlockManager::printBlockLayoutInfo()
   }
 
   int numBlockSum;
-  comm.Reduce(&numBlock, &numBlockSum, 1, MPI::INT, MPI::SUM, 0);
+  MPI_Reduce(&numBlock, &numBlockSum, 1, MPI_INT, MPI_SUM, 0, comm);
   if (myrank == 0) {
-    comm.Reduce(MPI_IN_PLACE, nBlock, nLevel, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(MPI_IN_PLACE, nBlock, nLevel, MPI_INT, MPI_SUM, 0, comm);
   } else {
-    comm.Reduce(nBlock, nBlock, nLevel, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(nBlock, nBlock, nLevel, MPI_INT, MPI_SUM, 0, comm);
   }
 
   if (myrank == 0) {
@@ -176,13 +178,13 @@ void BlockManager::printBlockLayoutInfo()
   delete[] nBlock;
 
   int numBlockMin, numBlockMax;
-  comm.Reduce(&numBlock, &numBlockMin, 1, MPI::INT, MPI::MIN, 0);
-  comm.Reduce(&numBlock, &numBlockMax, 1, MPI::INT, MPI::MAX, 0);
+  MPI_Reduce(&numBlock, &numBlockMin, 1, MPI_INT, MPI_MIN, 0, comm);
+  MPI_Reduce(&numBlock, &numBlockMax, 1, MPI_INT, MPI_MAX, 0, comm);
   int numBlock2Sum = numBlock * numBlock;
   if (myrank == 0) {
-    comm.Reduce(MPI_IN_PLACE, &numBlock2Sum, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(MPI_IN_PLACE, &numBlock2Sum, 1, MPI_INT, MPI_SUM, 0, comm);
   } else {
-    comm.Reduce(&numBlock2Sum, &numBlock2Sum, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&numBlock2Sum, &numBlock2Sum, 1, MPI_INT, MPI_SUM, 0, comm);
   }
 
   if (myrank == 0) {
@@ -241,8 +243,8 @@ void BlockManager::printBlockLayoutInfo()
   int nFaceInterSum[3] = { 0, 0, 0 };
   int nFaceIntraSum[3] = { 0, 0, 0 };
 
-  comm.Reduce(nFaceInter, nFaceInterSum, 3, MPI::INT, MPI::SUM, 0);
-  comm.Reduce(nFaceIntra, nFaceIntraSum, 3, MPI::INT, MPI::SUM, 0);
+  MPI_Reduce(nFaceInter, nFaceInterSum, 3, MPI_INT, MPI_SUM, 0, comm);
+  MPI_Reduce(nFaceIntra, nFaceIntraSum, 3, MPI_INT, MPI_SUM, 0, comm);
 
   if (myrank == 0) {
     std::cout << "  Number of faces" << std::endl;
@@ -265,14 +267,14 @@ void BlockManager::printBlockLayoutInfo()
   int nFaceInterTotal = nFaceInter[LD_M1] + nFaceInter[LD_0] + nFaceInter[LD_P1];
 
   int nFaceInterTotalMin, nFaceInterTotalMax;
-  comm.Reduce(&nFaceInterTotal, &nFaceInterTotalMin, 1, MPI::INT, MPI::MIN, 0);
-  comm.Reduce(&nFaceInterTotal, &nFaceInterTotalMax, 1, MPI::INT, MPI::MAX, 0);
+  MPI_Reduce(&nFaceInterTotal, &nFaceInterTotalMin, 1, MPI_INT, MPI_MIN, 0, comm);
+  MPI_Reduce(&nFaceInterTotal, &nFaceInterTotalMax, 1, MPI_INT, MPI_MAX, 0, comm);
 
   int nFaceInterTotal2Sum = nFaceInterTotal * nFaceInterTotal;
   if (myrank == 0) {
-    comm.Reduce(MPI_IN_PLACE, &nFaceInterTotal2Sum, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(MPI_IN_PLACE, &nFaceInterTotal2Sum, 1, MPI_INT, MPI_SUM, 0, comm);
   } else {
-    comm.Reduce(&nFaceInterTotal2Sum, &nFaceInterTotal2Sum, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&nFaceInterTotal2Sum, &nFaceInterTotal2Sum, 1, MPI_INT, MPI_SUM, 0, comm);
   }
 
   if (myrank == 0) {
@@ -289,8 +291,10 @@ void BlockManager::printBlockLayoutInfo()
 /// ブロック配置情報を出力(ファイル).
 void BlockManager::printBlockLayoutInfo(const char* filename)
 {
-  int myrank = comm.Get_rank();
-  int nprocs = comm.Get_size();
+  int myrank = -1;
+  int nprocs = -1;
+  MPI_Comm_rank(comm, &myrank);
+  MPI_Comm_size(comm, &nprocs);
 
 	std::ofstream ofs;
   if (myrank == 0) {
@@ -313,8 +317,8 @@ void BlockManager::printBlockLayoutInfo(const char* filename)
 
 //ofs << myrank << ": Lmin=" << levelMin << " Lmax=" << levelMax << std::endl;
 
-  comm.Allreduce(MPI_IN_PLACE, &levelMin, 1, MPI::INT, MPI::MIN);
-  comm.Allreduce(MPI_IN_PLACE, &levelMax, 1, MPI::INT, MPI::MAX);
+  MPI_Allreduce(MPI_IN_PLACE, &levelMin, 1, MPI_INT, MPI_MIN, comm);
+  MPI_Allreduce(MPI_IN_PLACE, &levelMax, 1, MPI_INT, MPI_MAX, comm);
 
   if (myrank == 0) {
     ofs << "  Min level: " << levelMin << std::endl;
@@ -335,11 +339,11 @@ void BlockManager::printBlockLayoutInfo(const char* filename)
   }
 
   int numBlockSum;
-  comm.Reduce(&numBlock, &numBlockSum, 1, MPI::INT, MPI::SUM, 0);
+  MPI_Reduce(&numBlock, &numBlockSum, 1, MPI_INT, MPI_SUM, 0, comm);
   if (myrank == 0) {
-    comm.Reduce(MPI_IN_PLACE, nBlock, nLevel, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(MPI_IN_PLACE, nBlock, nLevel, MPI_INT, MPI_SUM, 0, comm);
   } else {
-    comm.Reduce(nBlock, nBlock, nLevel, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(nBlock, nBlock, nLevel, MPI_INT, MPI_SUM, 0, comm);
   }
 
   if (myrank == 0) {
@@ -353,13 +357,13 @@ void BlockManager::printBlockLayoutInfo(const char* filename)
   delete[] nBlock;
 
   int numBlockMin, numBlockMax;
-  comm.Reduce(&numBlock, &numBlockMin, 1, MPI::INT, MPI::MIN, 0);
-  comm.Reduce(&numBlock, &numBlockMax, 1, MPI::INT, MPI::MAX, 0);
+  MPI_Reduce(&numBlock, &numBlockMin, 1, MPI_INT, MPI_MIN, 0, comm);
+  MPI_Reduce(&numBlock, &numBlockMax, 1, MPI_INT, MPI_MAX, 0, comm);
   int numBlock2Sum = numBlock * numBlock;
   if (myrank == 0) {
-    comm.Reduce(MPI_IN_PLACE, &numBlock2Sum, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(MPI_IN_PLACE, &numBlock2Sum, 1, MPI_INT, MPI_SUM, 0, comm);
   } else {
-    comm.Reduce(&numBlock2Sum, &numBlock2Sum, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&numBlock2Sum, &numBlock2Sum, 1, MPI_INT, MPI_SUM, 0, comm);
   }
 
   if (myrank == 0) {
@@ -418,8 +422,8 @@ void BlockManager::printBlockLayoutInfo(const char* filename)
   int nFaceInterSum[3] = { 0, 0, 0 };
   int nFaceIntraSum[3] = { 0, 0, 0 };
 
-  comm.Reduce(nFaceInter, nFaceInterSum, 3, MPI::INT, MPI::SUM, 0);
-  comm.Reduce(nFaceIntra, nFaceIntraSum, 3, MPI::INT, MPI::SUM, 0);
+  MPI_Reduce(nFaceInter, nFaceInterSum, 3, MPI_INT, MPI_SUM, 0, comm);
+  MPI_Reduce(nFaceIntra, nFaceIntraSum, 3, MPI_INT, MPI_SUM, 0, comm);
 
   if (myrank == 0) {
     ofs << "  Number of faces" << std::endl;
@@ -442,14 +446,14 @@ void BlockManager::printBlockLayoutInfo(const char* filename)
   int nFaceInterTotal = nFaceInter[LD_M1] + nFaceInter[LD_0] + nFaceInter[LD_P1];
 
   int nFaceInterTotalMin, nFaceInterTotalMax;
-  comm.Reduce(&nFaceInterTotal, &nFaceInterTotalMin, 1, MPI::INT, MPI::MIN, 0);
-  comm.Reduce(&nFaceInterTotal, &nFaceInterTotalMax, 1, MPI::INT, MPI::MAX, 0);
+  MPI_Reduce(&nFaceInterTotal, &nFaceInterTotalMin, 1, MPI_INT, MPI_MIN, 0, comm);
+  MPI_Reduce(&nFaceInterTotal, &nFaceInterTotalMax, 1, MPI_INT, MPI_MAX, 0, comm);
 
   int nFaceInterTotal2Sum = nFaceInterTotal * nFaceInterTotal;
   if (myrank == 0) {
-    comm.Reduce(MPI_IN_PLACE, &nFaceInterTotal2Sum, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(MPI_IN_PLACE, &nFaceInterTotal2Sum, 1, MPI_INT, MPI_SUM, 0, comm);
   } else {
-    comm.Reduce(&nFaceInterTotal2Sum, &nFaceInterTotal2Sum, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&nFaceInterTotal2Sum, &nFaceInterTotal2Sum, 1, MPI_INT, MPI_SUM, 0, comm);
   }
 
   if (myrank == 0) {
@@ -472,7 +476,10 @@ void BlockManager::setFaceLists()
 {
   if (faceListPrepared) return;
 
-  int myrank = comm.Get_rank();
+  int myrank = -1;
+  int nprocs = -1;
+  MPI_Comm_rank(comm, &myrank);
+  MPI_Comm_size(comm, &nprocs);
 
   for (int localID = 0; localID < numBlock; localID++) {
     BlockBase* block = blockList[localID];
@@ -487,7 +494,7 @@ void BlockManager::setFaceLists()
         if (rank == myrank) {
           localFaceList.push_back(FaceID(localID, face));
         }
-        else if (rank != MPI::PROC_NULL) {
+        else if (rank != MPI_PROC_NULL) {
           sendFaceList[rank].push_back(FaceID(localID, face));
           recvFaceList[rank].push_back(FaceID(localID, face));
         }
@@ -500,7 +507,7 @@ void BlockManager::setFaceLists()
           if (rank == myrank) {
             localFaceList.push_back(FaceID(localID, face, subface));
           }
-          else if (rank != MPI::PROC_NULL) {
+          else if (rank != MPI_PROC_NULL) {
             sendFaceList[rank].push_back(FaceID(localID, face, subface));
             recvFaceList[rank].push_back(FaceID(localID, face, subface));
           }
@@ -534,7 +541,10 @@ void BlockManager::setFaceLists()
 void BlockManager::setSeparateFaceLists() {
   if (separateFaceListPrepared) return;
 
-  int myrank = comm.Get_rank();
+  int myrank = -1;
+  int nprocs = -1;
+  MPI_Comm_rank(comm, &myrank);
+  MPI_Comm_size(comm, &nprocs);
 
   for (int localID = 0; localID < numBlock; localID++) {
     BlockBase* block = blockList[localID];
@@ -550,7 +560,7 @@ void BlockManager::setSeparateFaceLists() {
         if (rank == myrank) {
           localSeparateFaceList[xyz].push_back(FaceID(localID, face));
         }
-        else if (rank != MPI::PROC_NULL) {
+        else if (rank != MPI_PROC_NULL) {
           sendSeparateFaceList[xyz][rank].push_back(FaceID(localID, face));
           recvSeparateFaceList[xyz][rank].push_back(FaceID(localID, face));
         }
@@ -563,7 +573,7 @@ void BlockManager::setSeparateFaceLists() {
           if (rank == myrank) {
             localSeparateFaceList[xyz].push_back(FaceID(localID, face, subface));
           }
-          else if (rank != MPI::PROC_NULL) {
+          else if (rank != MPI_PROC_NULL) {
             sendSeparateFaceList[xyz][rank].push_back(FaceID(localID, face, subface));
             recvSeparateFaceList[xyz][rank].push_back(FaceID(localID, face, subface));
           }
@@ -588,7 +598,10 @@ void BlockManager::setSeparateFaceLists() {
 void BlockManager::setSeparateLevelDiffFaceLists() {
   if (separateLevelDiffFaceListPrepared) return;
 
-  int myrank = comm.Get_rank();
+  int myrank = -1;
+  int nprocs = -1;
+  MPI_Comm_rank(comm, &myrank);
+  MPI_Comm_size(comm, &nprocs);
 
   for (int localID = 0; localID < numBlock; localID++) {
     BlockBase* block = blockList[localID];
@@ -603,7 +616,7 @@ void BlockManager::setSeparateLevelDiffFaceLists() {
         if (rank == myrank) {
           localSeparateLevelDiffFaceList[xyz][LD_0].push_back(FaceID(localID, face));
         }
-        else if (rank != MPI::PROC_NULL) {
+        else if (rank != MPI_PROC_NULL) {
           sendSeparateLevelDiffFaceList[xyz][LD_0][rank].push_back(FaceID(localID, face));
           recvSeparateLevelDiffFaceList[xyz][LD_0][rank].push_back(FaceID(localID, face));
         }
@@ -613,7 +626,7 @@ void BlockManager::setSeparateLevelDiffFaceLists() {
         if (rank == myrank) {
           localSeparateLevelDiffFaceList[xyz][LD_M1].push_back(FaceID(localID, face));
         }
-        else if (rank != MPI::PROC_NULL) {
+        else if (rank != MPI_PROC_NULL) {
           sendSeparateLevelDiffFaceList[xyz][LD_M1][rank].push_back(FaceID(localID, face));
           recvSeparateLevelDiffFaceList[xyz][LD_M1][rank].push_back(FaceID(localID, face));
         }
@@ -625,7 +638,7 @@ void BlockManager::setSeparateLevelDiffFaceLists() {
           if (rank == myrank) {
             localSeparateLevelDiffFaceList[xyz][LD_P1].push_back(FaceID(localID, face, subface));
           }
-          else if (rank != MPI::PROC_NULL) {
+          else if (rank != MPI_PROC_NULL) {
             sendSeparateLevelDiffFaceList[xyz][LD_P1][rank].push_back(FaceID(localID, face, subface));
             recvSeparateLevelDiffFaceList[xyz][LD_P1][rank].push_back(FaceID(localID, face, subface));
           }

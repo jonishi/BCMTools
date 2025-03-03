@@ -100,7 +100,7 @@ class BlockManager {
   int startID;     ///< 先頭ブロックID
   int numBlock;    ///< 担当ブロック数
 
-  MPI::Intracomm comm;   ///< MPIコミュニケータ
+  MPI_Comm comm;   ///< MPIコミュニケータ
 
   BlockList blockList;   ///< ブロックのリスト
 
@@ -156,10 +156,10 @@ public:
   }
 
   /// MPIコミュニケータ設定.
-  void setCommunicator(const MPI::Intracomm& comm) { this->comm = comm; }
+  void setCommunicator(const MPI_Comm& comm) { this->comm = comm; }
 
   /// MPIコミュニケータ取得.
-  const MPI::Intracomm& getCommunicator() { return comm; }
+  const MPI_Comm& getCommunicator() { return comm; }
 
   /// ブロックを登録.
   void registerBlock(BlockBase* block);
@@ -852,7 +852,7 @@ protected:
   BlockManager()
    : numBlock(0), faceListPrepared(false), separateFaceListPrepared(false),
      separateLevelDiffFaceListPrepared(false) {
-    comm = MPI::COMM_WORLD;
+    comm = MPI_COMM_WORLD;
   }
 
   /// デストラクタ.

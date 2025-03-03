@@ -20,7 +20,7 @@
 using namespace PolylibNS;
 
 /// コンストラクタ.
-BCMPolylib::BCMPolylib(MPI::Comm& comm)
+BCMPolylib::BCMPolylib(MPI_Comm comm)
 {
   m_mycomm = comm;  // ちゃんとMPI_Commにキャストされる(see openmpi/ompi/mpi/cxx/comm.h)
   MPI_Comm_rank(m_mycomm, &m_myrank);

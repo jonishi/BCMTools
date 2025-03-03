@@ -125,7 +125,7 @@ void BCMOctree::makeNode(Node* node)
 
 
 /// Octree情報を他rankにブロードキャスト.
-void BCMOctree::broadcast(MPI::Intracomm& comm)
+void BCMOctree::broadcast(MPI_Comm comm)
 {
   assert(comm.Get_rank() == 0);
   rootGrid->broadcast(comm);
@@ -134,7 +134,7 @@ void BCMOctree::broadcast(MPI::Intracomm& comm)
   int ibuf[2];
   ibuf[0] = numLeafNode;
   ibuf[1] = ordering;
-  comm.Bcast(&ibuf, 2, MPI::INT, 0);
+  MPI_Bcast(&ibuf, 2, MPI_INT, 0, comm);
 
   size_t size = Pedigree::GetSerializeSize();
   unsigned char* buf = new unsigned char[size * numLeafNode];
@@ -144,7 +144,7 @@ void BCMOctree::broadcast(MPI::Intracomm& comm)
     packPedigrees(rootNodes[id], ip, buf);
   }
 
-  comm.Bcast(buf, size*numLeafNode, MPI::BYTE, 0);
+  MPI_Bcast(buf, size*numLeafNode, MPI_BYTE, 0, comm);
   delete[] buf;
 }
 
@@ -179,21 +179,21 @@ void BCMOctree::unpackPedigrees(int numLeafNode, const unsigned char* buf,
 
 
 /// rank0からOctree情報を受信.
-BCMOctree* BCMOctree::ReceiveFromMaster(MPI::Intracomm& comm)
+BCMOctree* BCMOctree::ReceiveFromMaster(MPI_Comm comm)
 {
   assert(comm.Get_rank() != 0);
 
   RootGrid* rootGrid = RootGrid::ReceiveFromMaster(comm);
 
   int ibuf[2];
-  comm.Bcast(&ibuf, 2, MPI::INT, 0);
+  MPI_Bcast(&ibuf, 2, MPI_INT, 0, comm);
   int numLeafNode = ibuf[0];
   Ordering ordering = Ordering(ibuf[1]);
 
   size_t size = Pedigree::GetSerializeSize();
   unsigned char* buf = new unsigned char[size * numLeafNode];
 
-  comm.Bcast(buf, size*numLeafNode, MPI::BYTE, 0);
+  MPI_Bcast(buf, size*numLeafNode, MPI_BYTE, 0, comm);
 
   BCMOctree* tree = new BCMOctree(rootGrid, ordering, numLeafNode, buf);
   delete[] buf;

@@ -87,8 +87,8 @@ int CommBuffer::allocateBuffer()
   if (nPeer > 0) {
     delete[] status;
     delete[] request;
-    status = new MPI::Status[nPeer];
-    request = new MPI::Request[nPeer];
+    status = new MPI_Status[nPeer];
+    request = new MPI_Request[nPeer];
   }
   return nPeer;
 }
@@ -121,7 +121,7 @@ void CommBuffer::deleteBuffer()
 // SendBuffer -- 送信用通信バッファクラス. //////////
 
 /// コンストラクタ.
-SendBuffer::SendBuffer(int tag, const MPI::Comm& comm) : tag(tag), comm(comm)
+SendBuffer::SendBuffer(int tag, const MPI_Comm& comm) : tag(tag), comm(comm)
 {
 }
 
@@ -137,7 +137,7 @@ void SendBuffer::send()
 {
   BufferTable::const_iterator it = bufferTable.begin();
   for (; it != bufferTable.end(); ++it) {
-    comm.Send(it->second->data, it->second->size, MPI::BYTE, it->first, tag);
+    MPI_Send(it->second->data, it->second->size, MPI_BYTE, it->first, tag, comm);
   }
 }
 
@@ -147,8 +147,8 @@ void SendBuffer::sendBegin()
 {
   BufferTable::const_iterator it = bufferTable.begin();
   for (int i = 0; it != bufferTable.end(); ++it, ++i) {
-    request[i] = comm.Isend(it->second->data, it->second->size,
-                            MPI::BYTE, it->first, tag);
+     MPI_Isend(it->second->data, it->second->size,
+                            MPI_BYTE, it->first, tag, comm, &request[i]);
   }
 }
 
@@ -156,14 +156,14 @@ void SendBuffer::sendBegin()
 /// ノンブロッキング送信終了待ち.
 void SendBuffer::sendEnd()
 {
-  MPI::Request::Waitall(nPeer, request, status);
+  MPI_Waitall(nPeer, request, status);
 }
 
 
 // RecvBuffer -- 受信用通信バッファクラス. //////////
 
 /// コンストラクタ.
-RecvBuffer::RecvBuffer(int tag, const MPI::Comm& comm) : tag(tag), comm(comm)
+RecvBuffer::RecvBuffer(int tag, const MPI_Comm& comm) : tag(tag), comm(comm)
 {
 }
 
@@ -179,8 +179,8 @@ void RecvBuffer::recv()
 {
   BufferTable::iterator it = bufferTable.begin();
   for (int i = 0; it != bufferTable.end(); ++it, ++i) {
-    comm.Recv(it->second->data, it->second->size, MPI::BYTE, it->first, tag,
-              status[i]);
+    MPI_Recv(it->second->data, it->second->size, MPI_BYTE, it->first, tag, comm,
+              &status[i]);
   }
 }
 
@@ -190,8 +190,8 @@ void RecvBuffer::recvBegin()
 {
   BufferTable::iterator it = bufferTable.begin();
   for (int i = 0; it != bufferTable.end(); ++it, ++i) {
-    request[i] = comm.Irecv(it->second->data, it->second->size,
-                            MPI::BYTE, it->first, tag);
+    MPI_Irecv(it->second->data, it->second->size,
+                            MPI_BYTE, it->first, tag, comm, &request[i]);
   }
 }
 
@@ -199,7 +199,7 @@ void RecvBuffer::recvBegin()
 /// ノンブロッキング受信終了待ち.
 void RecvBuffer::recvEnd()
 {
-  MPI::Request::Waitall(nPeer, request, status);
+  MPI_Waitall(nPeer, request, status);
 }
 
 

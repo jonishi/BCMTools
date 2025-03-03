@@ -39,7 +39,7 @@ class VCUpdater {
 
   const NeighborInfo* neighborInfo;  ///< 隣接情報配列
 
-  const MPI::Comm& comm;  ///< MPIコミュニケータ
+  const MPI_Comm& comm;  ///< MPIコミュニケータ
 
   int myrank;  ///< 所属ランク番号
 
@@ -50,9 +50,10 @@ public:
   ///  @param[in] neighborInfo 隣接情報配列
   ///  @param[in] comm MPIコミュニケータ(ディフォルトMPI::COMM_WORLD)
   ///
-  VCUpdater(const NeighborInfo* neighborInfo, const MPI::Comm& comm = MPI::COMM_WORLD)
+  VCUpdater(const NeighborInfo* neighborInfo, const MPI_Comm& comm = MPI_COMM_WORLD)
     : neighborInfo(neighborInfo), comm(comm) {
-    myrank = comm.Get_rank();
+    int rank = -1;
+    MPI_Comm_rank(comm, &rank);
   }
 
   /// デストラクタ.

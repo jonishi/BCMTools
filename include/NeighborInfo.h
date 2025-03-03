@@ -68,7 +68,7 @@ public:
   NeighborInfo() {
     for (int i = 0; i < NUM_SUBFACE; i++) {
       neighborID[i] = -1;
-      neighborRank[i] = MPI::PROC_NULL;
+      neighborRank[i] = MPI_PROC_NULL;
     }
     outerBoundary = false;
     levelDiffarence = 0;

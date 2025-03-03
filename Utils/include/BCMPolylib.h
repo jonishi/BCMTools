@@ -49,7 +49,7 @@ public:
   ///
   ///   @param[in] comm MPIコミュニケータ
   ///
-  BCMPolylib(MPI::Comm& comm = MPI::COMM_WORLD);
+  BCMPolylib(MPI_Comm comm = MPI_COMM_WORLD);
 
   /// デストラクタ.
   ~BCMPolylib();

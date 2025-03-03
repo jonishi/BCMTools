@@ -36,7 +36,7 @@
 ///
 class ConfigBase {
 
-  MPI::Comm& comm;   ///< MPIコミュニケータ
+  MPI_Comm& comm;   ///< MPIコミュニケータ
 
   ConfigFile* configFile;  ///< ConfigFileオブジェクト
 
@@ -45,7 +45,7 @@ public:
   ///
   ///  @param[in] comm MPIコミュニケータ
   ///
-  ConfigBase(MPI::Comm& comm = MPI::COMM_WORLD);
+  ConfigBase(MPI_Comm comm = MPI_COMM_WORLD);
 
   /// デストラクタ.
   ~ConfigBase();

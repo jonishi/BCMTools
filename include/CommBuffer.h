@@ -72,8 +72,8 @@ protected:
   BufferTable bufferTable;  ///< バッファテーブル
 
   int nPeer;   ///< 通信相手ノード数
-  MPI::Status* status;     ///< MPIステータス配列
-  MPI::Request* request;   ///< MPIリクエスト配列
+  MPI_Status* status;     ///< MPIステータス配列
+  MPI_Request* request;   ///< MPIリクエスト配列
 
 //public:
 protected:
@@ -139,7 +139,7 @@ private:
 class SendBuffer : public CommBuffer {
 
   int tag;                ///< タグ値
-  const MPI::Comm& comm;  ///< コミュニケータ
+  const MPI_Comm& comm;  ///< コミュニケータ
 
 public:
 
@@ -148,7 +148,7 @@ public:
   ///  @param[in] tag タグ値
   ///  @param[in] comm コミュニケータ(ディフォルトMPI_COMM_WORLD)
   ///
-  SendBuffer(int tag, const MPI::Comm& comm = MPI::COMM_WORLD);
+  SendBuffer(int tag, const MPI_Comm& comm = MPI_COMM_WORLD);
 
   /// デストラクタ.
   ~SendBuffer();
@@ -171,7 +171,7 @@ public:
 class RecvBuffer : public CommBuffer {
 
   int tag;                ///< タグ値
-  const MPI::Comm& comm;  ///< コミュニケータ
+  const MPI_Comm& comm;  ///< コミュニケータ
 
 public:
 
@@ -180,7 +180,7 @@ public:
   ///  @param[in] tag タグ値
   ///  @param[in] comm コミュニケータ(ディフォルトMPI_COMM_WORLD)
   ///
-  RecvBuffer(int tag, const MPI::Comm& comm = MPI::COMM_WORLD);
+  RecvBuffer(int tag, const MPI_Comm& comm = MPI_COMM_WORLD);
 
   /// デストラクタ.
   ~RecvBuffer();

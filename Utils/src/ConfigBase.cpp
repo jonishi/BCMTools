@@ -21,7 +21,7 @@
 
 
 /// コンストラクタ.
-ConfigBase::ConfigBase(MPI::Comm& comm) : comm(comm)
+ConfigBase::ConfigBase(MPI_Comm comm) : comm(comm)
 {
 }
 
@@ -36,7 +36,9 @@ ConfigBase::~ConfigBase()
 /// 設定ファイル読み込み.
 void ConfigBase::load(const char* file)
 {
-  if (comm.Get_rank() == 0) {
+  int myrank = -1;
+  MPI_Comm_rank(comm, &myrank);
+  if (myrank == 0) {
     try {
       configFile = new ConfigFile(file);
       parse();
@@ -68,9 +70,9 @@ void ConfigBase::broadcastConfigFile(const ConfigFile* configFile)
   outStr << *configFile;
 
   int size = outStr.str().size() + 1;
-  comm.Bcast(&size, 1, MPI::INT, 0);
+  MPI_Bcast(&size, 1, MPI_INT, 0, comm);
 
-  comm.Bcast((void*)outStr.str().c_str(), size, MPI::CHAR, 0);
+  MPI_Bcast((void*)outStr.str().c_str(), size, MPI_CHAR, 0, comm);
   // constを消すためにキャストが必要
 }
 
@@ -79,10 +81,10 @@ void ConfigBase::broadcastConfigFile(const ConfigFile* configFile)
 void ConfigBase::receiveConfigFile(ConfigFile* configFile)
 {
   int size;
-  comm.Bcast(&size, 1, MPI::INT, 0);
+  MPI_Bcast(&size, 1, MPI_INT, 0, comm);
 
   char* buffer = new char[size];
-  comm.Bcast(buffer, size, MPI::CHAR, 0);
+  MPI_Bcast(buffer, size, MPI_CHAR, 0, comm);
 
   std::istringstream inStr(buffer);
   inStr >> *configFile;
@@ -95,5 +97,5 @@ void ConfigBase::receiveConfigFile(ConfigFile* configFile)
 void ConfigBase::errorExit(const char* message, int code)
 {
   std::cout << "error: " << message << std::endl;
-  comm.Abort(code);
+  MPI_Abort(comm, code);
 }

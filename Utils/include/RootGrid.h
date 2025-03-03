@@ -231,7 +231,7 @@ public:
   ///
   ///  @param[in] comm MPIコミュニケータ
   ///
-  void broadcast(MPI::Intracomm& comm = MPI::COMM_WORLD) {
+  void broadcast(MPI_Comm comm = MPI_COMM_WORLD) {
     int buf[4];
     buf[0] = nx;
     buf[1] = ny;
@@ -240,16 +240,16 @@ public:
     if (periodicX) buf[3] += 1;
     if (periodicY) buf[3] += 2;
     if (periodicZ) buf[3] += 4;
-    comm.Bcast(buf, 4, MPI::INT, 0);
+    MPI_Bcast(buf, 4, MPI_INT, 0, comm);
   }
 
   /// ランク0からルート配置情報を受信.
   ///
   ///  @param[in] comm MPIコミュニケータ
   ///
-  static RootGrid* ReceiveFromMaster(MPI::Intracomm& comm = MPI::COMM_WORLD) {
+  static RootGrid* ReceiveFromMaster(MPI_Comm comm = MPI_COMM_WORLD) {
     int buf[4];
-    comm.Bcast(buf, 4, MPI::INT, 0);
+    MPI_Bcast(buf, 4, MPI_INT, 0, comm);
     RootGrid* rootGrid = new RootGrid(buf[0], buf[1], buf[2]);
     if (buf[3] & 1) rootGrid->setPeriodicX();
     if (buf[3] & 2) rootGrid->setPeriodicY();

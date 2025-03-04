@@ -121,7 +121,7 @@ void CommBuffer::deleteBuffer()
 // SendBuffer -- 送信用通信バッファクラス. //////////
 
 /// コンストラクタ.
-SendBuffer::SendBuffer(int tag, const MPI_Comm& comm) : tag(tag), comm(comm)
+SendBuffer::SendBuffer(int tag, const MPI_Comm comm) : tag(tag), comm(comm)
 {
 }
 
@@ -163,7 +163,7 @@ void SendBuffer::sendEnd()
 // RecvBuffer -- 受信用通信バッファクラス. //////////
 
 /// コンストラクタ.
-RecvBuffer::RecvBuffer(int tag, const MPI_Comm& comm) : tag(tag), comm(comm)
+RecvBuffer::RecvBuffer(int tag, const MPI_Comm comm) : tag(tag), comm(comm)
 {
 }
 

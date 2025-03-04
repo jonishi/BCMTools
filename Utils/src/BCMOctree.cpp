@@ -134,7 +134,7 @@ void BCMOctree::broadcast(MPI_Comm comm)
   int ibuf[2];
   ibuf[0] = numLeafNode;
   ibuf[1] = ordering;
-  MPI_Bcast(&ibuf, 2, MPI_INT, 0, comm);
+  MPI_Bcast(ibuf, 2, MPI_INT, 0, comm);
 
   size_t size = Pedigree::GetSerializeSize();
   unsigned char* buf = new unsigned char[size * numLeafNode];
@@ -186,7 +186,7 @@ BCMOctree* BCMOctree::ReceiveFromMaster(MPI_Comm comm)
   RootGrid* rootGrid = RootGrid::ReceiveFromMaster(comm);
 
   int ibuf[2];
-  MPI_Bcast(&ibuf, 2, MPI_INT, 0, comm);
+  MPI_Bcast(ibuf, 2, MPI_INT, 0, comm);
   int numLeafNode = ibuf[0];
   Ordering ordering = Ordering(ibuf[1]);
 
